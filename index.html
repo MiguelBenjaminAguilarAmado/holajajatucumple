@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Escape Room - Especial Cumpleaños</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <div class="noise-overlay"></div>
+    
+    <!-- PASO 1: Comprobación de cumpleaños -->
+    <section id="step-birthday" class="card active">
+      <div class="card-icon">🎂</div>
+      <h1 class="title">Bienvenido</h1>
+      <p class="subtitle">Antes de comenzar, necesitamos verificar tu identidad.</p>
+      
+      <div class="prompt-box">
+        <p class="question">¿Hoy es tu cumpleaños?</p>
+      </div>
+
+      <div class="button-group">
+        <button id="btn-birthday-yes" class="btn btn-primary" type="button">Sí, lo es</button>
+        <button id="btn-birthday-no" class="btn btn-secondary" type="button">No</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA: Acceso denegado (cuando dicen NO) -->
+    <section id="step-denied" class="card hidden">
+      <div class="card-icon lock-icon">🔒</div>
+      <h1 class="title">Acceso Cerrado</h1>
+      <p class="subtitle">Este misterio está reservado únicamente para quien cumple años hoy.</p>
+      <div class="alert-box">
+        <p>Vuelve cuando sea tu día especial. 👋</p>
+      </div>
+      <button id="btn-retry-birthday" class="btn btn-outline" type="button">¿Te has equivocado?</button>
+    </section>
+
+    <!-- PASO 2: Felicitación y Elección de Nombre -->
+    <section id="step-identity" class="card hidden">
+      <div class="card-icon party-icon">✨</div>
+      <span class="badge">¡Verificado!</span>
+      <h1 class="title">¡Muchas Felicidades! 🎉</h1>
+      <p class="subtitle">Tu experiencia de cumpleaños está a punto de dar comienzo.</p>
+      
+      <div class="prompt-box">
+        <p class="question">¿Cuál es tu nombre?</p>
+      </div>
+
+      <div class="button-group-vertical">
+        <button class="btn btn-choice" data-user="Paula" type="button">
+          <span class="choice-text">Paula</span>
+          <span class="choice-arrow">→</span>
+        </button>
+        <button class="btn btn-choice" data-user="Mariano" type="button">
+          <span class="choice-text">Mariano</span>
+          <span class="choice-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA EXCLUSIVA DE MARIANO (Solo vídeo con audio y fin) -->
+    <section id="step-video-mariano" class="card hidden">
+      <div class="video-header">
+        <span class="badge badge-success">¡Cumpleaños Especial! 🎉</span>
+        <h2 class="title">¡Felicidades Mariano! 🎂</h2>
+      </div>
+
+      <div class="media-container" id="container-mariano">
+        <video 
+          id="video-mariano" 
+          class="room-media" 
+          playsinline 
+          webkit-playsinline 
+          controls 
+          preload="auto">
+          Tu navegador no soporta vídeo HTML5 con audio.
+        </video>
+        <img id="img-mariano" class="room-media hidden" alt="Vídeo Mariano">
+        
+        <div id="placeholder-mariano" class="video-placeholder hidden">
+          <div class="placeholder-content">
+            <span class="placeholder-icon">🎬</span>
+            <p id="placeholder-text-mariano">Vídeo no encontrado.</p>
+            <small>Coloca <code>assets/videom.mp4</code> (o <code>.webm</code>) para reproducir con audio.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="video-footer">
+        <button id="btn-reset-mariano" class="btn btn-outline btn-full" type="button">
+          ↻ Volver al inicio
+        </button>
+      </div>
+    </section>
+
+    <!-- PASO 3: Validación del Código (Mariano y Paula) -->
+    <section id="step-code" class="card hidden">
+      <div class="top-nav">
+        <button id="btn-back-to-identity" class="btn-back" type="button" aria-label="Volver">← Cambiar usuario</button>
+      </div>
+
+      <div class="card-icon code-icon">🔑</div>
+      <span id="code-user-badge" class="badge">Usuario</span>
+      
+      <h2 id="code-question-text" class="title question-title">¿Cuál es el código?</h2>
+      <p class="subtitle">Introduce el código numérico para desbloquear la siguiente pista.</p>
+
+      <form id="code-form" autocomplete="off" onsubmit="return false;">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="code-input" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="6" 
+            placeholder="••••" 
+            autocomplete="one-time-code"
+            required
+          >
+        </div>
+        <p id="error-message" class="error-text hidden" aria-live="polite">Código incorrecto. Vuelve a intentarlo.</p>
+        
+        <button id="btn-submit-code" class="btn btn-primary btn-full" type="submit">
+          Verificar código
+        </button>
+      </form>
+    </section>
+
+    <!-- PASO 4: Visualización de Vídeo Fase 1 (Paula: videop1) -->
+    <section id="step-video" class="card hidden">
+      <div class="video-header">
+        <span class="badge badge-success">¡Desbloqueado! 🔓</span>
+        <h2 id="video-title" class="title">¡Felicidades Paula! 🎉</h2>
+      </div>
+
+      <div class="yt-container" id="container-paula-1">
+        <iframe 
+          id="yt-paula-1" 
+          class="yt-frame" 
+          src="" 
+          title="Vídeo Paula 1" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <div class="video-footer">
+        <button id="btn-go-to-puzzle" class="btn btn-primary btn-full" type="button">
+          Continuar al misterio ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- PASO 5: Acertijo 01 - La Cámara Vieja (Paula) -->
+    <section id="step-puzzle-camera" class="card hidden">
+      <div class="puzzle-header">
+        <span class="badge">Acertijo 01</span>
+        <h2 class="title">Dale vida a la cámara 🔋</h2>
+        <p class="subtitle">La vieja cámara parece necesitar energía para revelar el secreto.</p>
+      </div>
+
+      <div class="camera-stage">
+        <svg class="camera-svg" viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
+          <rect x="25" y="45" width="270" height="155" rx="14" class="cam-body"/>
+          <path d="M 95 45 L 115 25 L 205 25 L 225 45 Z" class="cam-top"/>
+          <circle cx="160" cy="35" r="5" class="cam-viewfinder"/>
+          <rect x="45" y="60" width="30" height="18" rx="4" class="cam-flash"/>
+          <rect x="50" y="20" width="28" height="6" rx="2" class="cam-shutter"/>
+          <rect x="245" y="22" width="26" height="5" rx="2" class="cam-dial"/>
+          
+          <circle cx="105" cy="125" r="48" class="cam-lens-outer"/>
+          <circle cx="105" cy="125" r="36" class="cam-lens-mid"/>
+          <circle cx="105" cy="125" r="22" class="cam-lens-inner"/>
+          <circle cx="98" cy="118" r="6" class="cam-lens-glare"/>
+
+          <circle id="camera-led" cx="265" cy="68" r="6" class="cam-led led-off"/>
+
+          <g class="battery-compartment-group">
+            <rect x="180" y="75" width="102" height="105" rx="8" class="compartment-cavity"/>
+            <text x="231" y="90" text-anchor="middle" class="compartment-label">SLOT BATERÍAS</text>
+            <path d="M 282 80 L 305 92 L 305 168 L 282 175 Z" class="compartment-door"/>
+          </g>
+        </svg>
+
+        <div class="drop-slots-layer">
+          <div class="battery-slot" id="slot-1" data-slot="1">
+            <span class="slot-pole slot-plus">+</span>
+            <div class="slot-inner-target"></div>
+            <span class="slot-pole slot-minus">−</span>
+          </div>
+          <div class="battery-slot" id="slot-2" data-slot="2">
+            <span class="slot-pole slot-plus">+</span>
+            <div class="slot-inner-target"></div>
+            <span class="slot-pole slot-minus">−</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="puzzle-feedback" class="puzzle-feedback" aria-live="polite">
+        Arrastra las baterías correctas a las ranuras.
+      </div>
+
+      <div class="batteries-tray" id="batteries-tray">
+        <div class="battery-item" id="bat-1" data-type="valid" data-orientation="normal">
+          <div class="bat-nub"></div>
+          <div class="bat-body">
+            <span class="bat-pole bat-plus">+</span>
+            <span class="bat-brand">1.5V</span>
+            <span class="bat-pole bat-minus">−</span>
+          </div>
+        </div>
+
+        <div class="battery-item" id="bat-2" data-type="valid" data-orientation="normal">
+          <div class="bat-nub"></div>
+          <div class="bat-body">
+            <span class="bat-pole bat-plus">+</span>
+            <span class="bat-brand">1.5V</span>
+            <span class="bat-pole bat-minus">−</span>
+          </div>
+        </div>
+
+        <div class="battery-item bat-inverted" id="bat-3" data-type="inverted" data-orientation="inverted">
+          <div class="bat-body">
+            <span class="bat-pole bat-minus">−</span>
+            <span class="bat-brand">1.5V</span>
+            <span class="bat-pole bat-plus">+</span>
+          </div>
+          <div class="bat-nub bat-nub-bottom"></div>
+        </div>
+
+        <div class="battery-item bat-incompatible" id="bat-4" data-type="incompatible" data-orientation="normal">
+          <div class="bat-nub bat-nub-wide"></div>
+          <div class="bat-body bat-body-wide">
+            <span class="bat-pole bat-plus">+</span>
+            <span class="bat-brand">9V</span>
+            <span class="bat-pole bat-minus">−</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PASO 6: Vídeo Fase 2 (videop2 tras encender cámara) -->
+    <section id="step-video-phase2" class="card hidden">
+      <div class="video-header">
+        <span class="badge badge-success">¡Cámara Encendida! 📸</span>
+        <h2 class="title">Grabación Revelada</h2>
+      </div>
+
+      <div class="yt-container" id="container-paula-2">
+        <iframe 
+          id="yt-paula-2" 
+          class="yt-frame" 
+          src="" 
+          title="Vídeo Paula 2" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <div class="video-footer">
+        <button id="btn-go-to-cables" class="btn btn-primary btn-full" type="button">
+          Siguiente Acertijo ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- PASO 7: Acertijo 02 - Los 12 Cables (Paula) -->
+    <section id="step-puzzle-cables" class="card hidden">
+      <div class="puzzle-header">
+        <span class="badge">Acertijo 02</span>
+        <p class="cables-manual-hint">"Puede que Ana tenga un manual de instrucciones con la ayuda"</p>
+      </div>
+
+      <div class="cables-box" id="cables-box">
+        <div class="terminal-block terminal-top">
+          <div class="terminal-screws">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <span class="terminal-label">MAIN CONTROL CIRCUIT</span>
+        </div>
+
+        <div class="wires-container" id="wires-container"></div>
+
+        <div class="terminal-block terminal-bottom">
+          <div class="terminal-screws">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="cables-status-led" id="cables-status-led"></div>
+        </div>
+      </div>
+
+      <div id="cables-feedback" class="cables-feedback" aria-live="polite"></div>
+    </section>
+
+    <!-- PASO 8: Vídeo Fase 3 (videop3 tras resolver cables) -->
+    <section id="step-video-phase3" class="card hidden">
+      <div class="video-header">
+        <span class="badge badge-success">¡Circuito Desactivado! ⚡</span>
+        <h2 class="title">Última Grabación</h2>
+      </div>
+
+      <div class="yt-container" id="container-paula-3">
+        <iframe 
+          id="yt-paula-3" 
+          class="yt-frame" 
+          src="" 
+          title="Vídeo Paula 3" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <div class="video-footer">
+        <button id="btn-go-to-final" class="btn btn-primary btn-full" type="button">
+          Continuar al acertijo final ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- PASO 9: Acertijo Final (La Fecha Secreta) -->
+    <section id="step-puzzle-final" class="card hidden">
+      <div class="card-icon">🎁</div>
+      <span class="badge">Desafío Final</span>
+      <h2 class="title">La Prueba Definitiva</h2>
+      
+      <div class="final-story-box">
+        <p>¡Felicidades! Has llegado hasta aquí, la verdad que ni me lo esperaba, para recibir tu regalo solo tendrás que hacer este pequeño desafio final, es simplemente poner una fecha, la gracia es que no te voy a decir cual es, ni porque es, ni de que es ni blablabla, puede ser cualquier cosa.</p>
+      </div>
+
+      <div class="hint-wrapper">
+        <button id="btn-hint-final" class="btn btn-outline btn-hint" type="button">
+          💡 Pista
+        </button>
+        <p id="final-hint-text" class="pink-hint hidden" aria-live="polite">Date cuenta 🙏</p>
+      </div>
+
+      <form id="final-date-form" autocomplete="off" onsubmit="return false;">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="final-date-input" 
+            placeholder="DD / MM / AA" 
+            autocomplete="off"
+            required
+          >
+        </div>
+        <p id="date-error-message" class="error-text hidden" aria-live="polite">Fecha incorrecta. Piénsalo bien...</p>
+        
+        <button id="btn-submit-date" class="btn btn-primary btn-full" type="submit">
+          Verificar fecha
+        </button>
+      </form>
+    </section>
+
+    <!-- PASO 10: Pantalla de Victoria Final -->
+    <section id="step-victory" class="card hidden">
+      <div class="card-icon victory-icon">🏆✨</div>
+      <span class="badge badge-success">¡MISIÓN COMPLETADA!</span>
+      <h1 class="title">¡Lo has conseguido! 🎁</h1>
+      
+      <div class="victory-box">
+        <p class="victory-instruction">
+          Mándame un texto diciendo:
+        </p>
+        <div class="secret-word-box">
+          <span class="secret-word">"Alfombra verde"</span>
+        </div>
+        <p class="victory-subtext">
+          y así sé que te puedo dar el regalo.
+        </p>
+      </div>
+
+      <div class="button-group-vertical">
+        <a 
+          id="btn-whatsapp-gift" 
+          class="btn btn-whatsapp" 
+          href="https://wa.me/?text=Alfombra%20verde" 
+          target="_blank" 
+          rel="noopener noreferrer">
+          Enviar por WhatsApp 💬
+        </a>
+        <button id="btn-reset-all" class="btn btn-outline" type="button">
+          ↻ Volver al inicio
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
